@@ -8,7 +8,7 @@
 
 如果你发现了bug，请通过以下步骤报告：
 
-1. 在 [Issues](https://github.com/xiaolou888/dingshitongzhi/issues) 中搜索，确保该bug未被报告
+1. 在 [Issues](https://github.com/xiaolou888/youjiandingshi/issues) 中搜索，确保该bug未被报告
 2. 如果没有找到相关issue，创建新的issue
 3. 提供以下信息：
    - Bug的详细描述
@@ -22,7 +22,7 @@
 
 我们欢迎新功能的建议：
 
-1. 在 [Issues](https://github.com/xiaolou888/dingshitongzhi/issues) 中搜索，确保该功能未被提出
+1. 在 [Issues](https://github.com/xiaolou888/youjiandingshi/issues) 中搜索，确保该功能未被提出
 2. 创建新的issue，标记为 `enhancement`
 3. 详细描述：
    - 功能的用途和场景
@@ -40,8 +40,8 @@
 
 2. **克隆到本地**
    ```bash
-   git clone https://github.com/your-username/dingshitongzhi.git
-   cd dingshitongzhi
+   git clone https://github.com/your-username/youjiandingshi.git
+   cd youjiandingshi
    ```
 
 3. **创建特性分支**
@@ -167,8 +167,8 @@ function calculateNextTime(type, date) {
 
 有任何问题或想法，欢迎：
 
-- 在 [Issues](https://github.com/xiaolou888/dingshitongzhi/issues) 中提问
-- 在 [Discussions](https://github.com/xiaolou888/dingshitongzhi/discussions) 中讨论
+- 在 [Issues](https://github.com/xiaolou888/youjiandingshi/issues) 中提问
+- 在 [Discussions](https://github.com/xiaolou888/youjiandingshi/discussions) 中讨论
 
 ## ⚖️ 许可证
 

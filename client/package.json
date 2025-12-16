@@ -6,12 +6,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/xiaolou888/dingshitongzhi.git"
+    "url": "https://github.com/xiaolou888/youjiandingshi.git"
   },
   "bugs": {
-    "url": "https://github.com/xiaolou888/dingshitongzhi/issues"
+    "url": "https://github.com/xiaolou888/youjiandingshi/issues"
   },
-  "homepage": "https://github.com/xiaolou888/dingshitongzhi#readme",
+  "homepage": "https://github.com/xiaolou888/youjiandingshi#readme",
   "keywords": [
     "vue3",
     "element-plus",

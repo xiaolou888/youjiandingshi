@@ -49,6 +49,11 @@
 cd server
 npm install
 
+# 复制环境变量配置文件
+cp .env.example .env
+# Windows用户使用: copy .env.example .env
+# 然后编辑 .env 文件，填入你的真实数据库配置
+
 # 安装前端依赖
 cd ../client
 npm install
@@ -298,21 +303,28 @@ npm start
 
 感谢所有为本项目做出贡献的开发者！
 
+## 🔒 安全提示
+
+- ⚠️ **`.env` 文件包含敏感信息**，已被 `.gitignore` 忽略，切勿提交到Git
+- ✅ 请使用 `.env.example` 作为模板创建自己的 `.env` 文件
+- 🔑 生产环境务必修改 `JWT_SECRET` 为强密码
+- 📖 详细安全检查请参考 [`安全检查清单.md`](./安全检查清单.md)
+
 ## 📧 联系方式
 
 如有问题或建议，请通过以下方式联系：
 
-- 📮 提交 [Issue](https://github.com/xiaolou888/dingshitongzhi/issues)
-- 💬 发起 [Discussion](https://github.com/xiaolou888/dingshitongzhi/discussions)
+- 📮 提交 [Issue](https://github.com/xiaolou888/youjiandingshi/issues)
+- 💬 发起 [Discussion](https://github.com/xiaolou888/youjiandingshi/discussions)
 
 ## 🔗 项目地址
 
-**GitHub**: [https://github.com/xiaolou888/dingshitongzhi](https://github.com/xiaolou888/dingshitongzhi)
+**GitHub**: [https://github.com/xiaolou888/youjiandingshi](https://github.com/xiaolou888/youjiandingshi)
 
 ## ⭐ Star History
 
 如果这个项目对你有帮助，请给个 ⭐ Star 支持一下！
 
-[![Star History Chart](https://api.star-history.com/svg?repos=xiaolou888/dingshitongzhi&type=Date)](https://star-history.com/#xiaolou888/dingshitongzhi&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=xiaolou888/youjiandingshi&type=Date)](https://star-history.com/#xiaolou888/youjiandingshi&Date)
 
 
