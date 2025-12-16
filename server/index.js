@@ -14,6 +14,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // 路由
+app.use('/api/install', require('./routes/install')); // 安装向导路由（无需认证）
 app.use('/api/auth', require('./routes/auth')); // 认证路由（登录不需要token）
 app.use('/api/smtp', require('./routes/smtp'));
 app.use('/api/notifications', require('./routes/notifications'));

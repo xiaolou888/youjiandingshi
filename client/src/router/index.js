@@ -3,6 +3,12 @@ import Layout from '@/views/Layout.vue'
 
 const routes = [
   {
+    path: '/install',
+    name: 'Install',
+    component: () => import('@/views/Install.vue'),
+    meta: { title: '系统安装', noAuth: true }
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/Login.vue'),
@@ -65,8 +71,37 @@ const router = createRouter({
 })
 
 // 路由守卫
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const token = localStorage.getItem('token')
+  const installCompleted = localStorage.getItem('install_completed')
+  
+  // 检查是否需要安装（首次访问且未完成安装）
+  if (!installCompleted && to.path !== '/install') {
+    try {
+      const response = await fetch('http://localhost:3000/api/install/status')
+      const data = await response.json()
+      
+      // 如果系统未安装，跳转到安装页面
+      if (!data.installed) {
+        next('/install')
+        return
+      } else {
+        localStorage.setItem('install_completed', 'true')
+      }
+    } catch (error) {
+      // 如果后端未启动，仍然允许访问安装页面
+      if (to.path !== '/install' && to.path !== '/login') {
+        next('/install')
+        return
+      }
+    }
+  }
+  
+  // 如果访问安装页面但已经安装，跳转到登录页
+  if (to.path === '/install' && installCompleted) {
+    next('/login')
+    return
+  }
   
   // 如果是登录页，已登录则跳转首页
   if (to.path === '/login') {
