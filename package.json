@@ -1,0 +1,30 @@
+{
+  "name": "notification-system",
+  "version": "1.0.0",
+  "description": "消息通知系统 - 支持定时和周期性邮件发送",
+  "main": "server/index.js",
+  "scripts": {
+    "server": "cd server && npm start",
+    "server:dev": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "client:build": "cd client && npm run build",
+    "install:server": "cd server && npm install",
+    "install:client": "cd client && npm install",
+    "install:all": "npm run install:server && npm run install:client"
+  },
+  "keywords": [
+    "notification",
+    "email",
+    "schedule",
+    "cron",
+    "smtp",
+    "邮件通知",
+    "定时任务"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "name": "notification-server",
+  "version": "1.0.0",
+  "description": "消息通知系统后端 - 支持定时、周期性邮件通知",
+  "main": "index.js",
+  "author": "Notification System Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xiaolou888/dingshitongzhi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xiaolou888/dingshitongzhi/issues"
+  },
+  "homepage": "https://github.com/xiaolou888/dingshitongzhi#readme",
+  "keywords": [
+    "notification",
+    "email",
+    "schedule",
+    "cron",
+    "smtp",
+    "mailer"
+  ],
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.6.5",
+    "node-schedule": "^2.1.1",
+    "nodemailer": "^6.9.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
+
