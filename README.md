@@ -113,7 +113,6 @@ cd server
 node import-complete-db.js
 ```
 
-详细说明请查看 [数据库初始化说明.md](./数据库初始化说明.md)
 
 ### 3. 配置后端
 
@@ -163,7 +162,6 @@ npm start
 
 ## 📦 宝塔部署（推荐）
 
-详细部署步骤请查看 [宝塔部署文档](./宝塔部署文档.md)
 
 ### 快速步骤
 
@@ -288,7 +286,7 @@ npm start
 
 ## 📝 更新日志
 
-### v1.0.0 (2024-12-16)
+### v1.0.0 (2025-12-16)
 
 - ✅ 完整的通知管理功能
 - ✅ 支持单次、每天、每周、每月、每季度、每年、自定义周期
@@ -338,19 +336,12 @@ npm start
 
 感谢所有为本项目做出贡献的开发者！
 
-## 🔒 安全提示
-
-- ⚠️ **`.env` 文件包含敏感信息**，已被 `.gitignore` 忽略，切勿提交到Git
-- ✅ 请使用 `.env.example` 作为模板创建自己的 `.env` 文件
-- 🔑 生产环境务必修改 `JWT_SECRET` 为强密码
-- 📖 详细安全检查请参考 [`安全检查清单.md`](./安全检查清单.md)
 
 ## 📧 联系方式
 
 如有问题或建议，请通过以下方式联系：
 
 - 📮 提交 [Issue](https://github.com/xiaolou888/youjiandingshi/issues)
-- 💬 发起 [Discussion](https://github.com/xiaolou888/youjiandingshi/discussions)
 
 ## 🔗 项目地址
 
