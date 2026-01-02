@@ -33,19 +33,19 @@ router.get('/check', async (req, res) => {
       // 如果已配置，尝试连接数据库
       try {
         const db = require('../config/database');
-        await db.query('SELECT 1');
-        databaseOk = true;
+      await db.query('SELECT 1');
+      databaseOk = true;
 
-        // 检查关键表是否存在
-        const [tables] = await db.query(`
-          SELECT COUNT(*) as count FROM information_schema.tables 
-          WHERE table_schema = ? 
-          AND table_name IN ('users', 'notifications', 'smtp_config', 'contacts')
-        `, [process.env.DB_NAME]);
+      // 检查关键表是否存在
+      const [tables] = await db.query(`
+        SELECT COUNT(*) as count FROM information_schema.tables 
+        WHERE table_schema = ? 
+        AND table_name IN ('users', 'notifications', 'smtp_config', 'contacts')
+      `, [process.env.DB_NAME]);
 
-        tablesOk = tables[0].count >= 4;
-      } catch (error) {
-        console.error('Database check error:', error.message);
+      tablesOk = tables[0].count >= 4;
+    } catch (error) {
+      console.error('Database check error:', error.message);
       }
     }
 
@@ -113,17 +113,17 @@ router.get('/status', async (req, res) => {
     // 如果已配置，检查用户表是否有数据
     try {
       const db = require('../config/database');
-      const [users] = await db.query('SELECT COUNT(*) as count FROM users');
-      const installed = users[0].count > 0;
+    const [users] = await db.query('SELECT COUNT(*) as count FROM users');
+    const installed = users[0].count > 0;
 
-      res.json({
-        success: true,
-        installed
-      });
-    } catch (error) {
-      res.json({
-        success: false,
-        installed: false
+    res.json({
+      success: true,
+      installed
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      installed: false
       });
     }
   } catch (error) {

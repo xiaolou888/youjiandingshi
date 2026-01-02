@@ -116,8 +116,22 @@ async function logSend(notificationId, title, recipients, status, errorMessage =
 async function executeNotification(notification) {
   console.log(`📧 执行通知任务: ${notification.title}`);
   
-  const recipients = JSON.parse(notification.recipients);
-  const recipientsStr = recipients.join(', ');
+  // 安全解析 recipients
+  let recipients = [];
+  try {
+    if (typeof notification.recipients === 'string') {
+      recipients = JSON.parse(notification.recipients);
+    } else if (Array.isArray(notification.recipients)) {
+      recipients = notification.recipients;
+    }
+  } catch (error) {
+    console.error('❌ 解析收件人失败:', error.message);
+    console.error('原始数据:', notification.recipients);
+    // 如果解析失败，尝试按逗号分割
+    recipients = notification.recipients.split(',').map(r => r.trim()).filter(r => r);
+  }
+  
+  const recipientsStr = Array.isArray(recipients) ? recipients.join(', ') : String(recipients);
 
   // 发送邮件
   const result = await sendEmail({

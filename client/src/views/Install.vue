@@ -383,7 +383,7 @@ const completedInfo = reactive({
 const canProceed = computed(() => {
   // 如果已配置，检查数据库和表
   if (checks.configured) {
-    return checks.backend && checks.database && checks.tables
+  return checks.backend && checks.database && checks.tables
   }
   // 如果未配置，只需要后端运行
   return checks.backend
@@ -500,7 +500,7 @@ const createAdmin = async () => {
     
     // 等待服务重启
     setTimeout(() => {
-      currentStep.value = 3
+    currentStep.value = 3
       restarting.value = false
     }, 3000)
   } catch (error) {

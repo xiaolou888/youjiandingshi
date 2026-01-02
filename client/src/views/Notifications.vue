@@ -65,25 +65,31 @@
         </el-table-column>
         <el-table-column prop="next_send_at" label="下次发送" width="170">
           <template #default="{ row }">
-            {{ row.next_send_at ? formatDate(row.next_send_at) : '-' }}
+            <span v-if="row.status === 'completed'" style="color: #909399;">已完成</span>
+            <span v-else-if="row.status === 'paused'" style="color: #909399;">
+              {{ row.next_send_at ? formatDate(row.next_send_at) : '-' }}
+            </span>
+            <span v-else>
+              {{ row.next_send_at ? formatDate(row.next_send_at) : '-' }}
+            </span>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <div style="display: flex; gap: 8px; white-space: nowrap;">
-              <el-button 
-                :type="row.status === 'active' ? 'warning' : 'success'" 
-                size="small" 
-                @click="toggleStatus(row)"
-              >
-                {{ row.status === 'active' ? '暂停' : '恢复' }}
-              </el-button>
-              <el-button size="small" @click="showDialog('edit', row)">编辑</el-button>
-              <el-popconfirm title="确定删除这条通知吗？" @confirm="handleDelete(row.id)">
-                <template #reference>
-                  <el-button type="danger" size="small">删除</el-button>
-                </template>
-              </el-popconfirm>
+            <el-button 
+              :type="row.status === 'active' ? 'warning' : 'success'" 
+              size="small" 
+              @click="toggleStatus(row)"
+            >
+              {{ row.status === 'active' ? '暂停' : '恢复' }}
+            </el-button>
+            <el-button size="small" @click="showDialog('edit', row)">编辑</el-button>
+            <el-popconfirm title="确定删除这条通知吗？" @confirm="handleDelete(row.id)">
+              <template #reference>
+                <el-button type="danger" size="small">删除</el-button>
+              </template>
+            </el-popconfirm>
             </div>
           </template>
         </el-table-column>
@@ -107,9 +113,10 @@
     <el-dialog
       v-model="dialogVisible"
       :title="dialogType === 'create' ? '新建通知' : '编辑通知'"
-      width="800px"
+      width="900px"
       :close-on-click-modal="false"
       @closed="resetForm"
+      class="notification-dialog"
     >
       <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
         <el-form-item label="通知标题" prop="title">
@@ -309,12 +316,7 @@
         </el-form-item>
 
         <el-form-item label="邮件内容" prop="content">
-          <el-input
-            v-model="form.content"
-            type="textarea"
-            :rows="8"
-            placeholder="请输入邮件内容，支持HTML格式"
-          />
+          <EmailEditor v-model="form.content" />
         </el-form-item>
 
         <!-- 重复发送设置 -->
@@ -378,6 +380,7 @@ import {
   deleteNotification
 } from '@/api/notification'
 import { getContactList, createContact } from '@/api/contact'
+import EmailEditor from '@/components/EmailEditor.vue'
 
 const loading = ref(false)
 const submitLoading = ref(false)
@@ -566,7 +569,18 @@ const showDialog = (type, row = null) => {
     form.type = row.type
     // 安全解析 recipients
     try {
-      form.recipients = typeof row.recipients === 'string' ? JSON.parse(row.recipients) : row.recipients
+      if (typeof row.recipients === 'string') {
+        try {
+          form.recipients = JSON.parse(row.recipients)
+        } catch (jsonError) {
+          // 如果不是有效的 JSON，尝试按逗号分割
+          form.recipients = row.recipients.split(',').map(r => r.trim()).filter(r => r)
+        }
+      } else if (Array.isArray(row.recipients)) {
+        form.recipients = row.recipients
+      } else {
+        form.recipients = []
+      }
     } catch (error) {
       console.error('解析收件人失败:', error)
       form.recipients = []
@@ -787,7 +801,7 @@ const handleSubmit = async () => {
       repeat_times: form.repeat_times,
       repeat_interval: form.repeat_interval
     }
-    
+
     // 添加类型特定的字段
     if (form.type === 'custom') {
       data.custom_period_days = form.custom_period_days
@@ -844,8 +858,13 @@ const parseRecipients = (recipients) => {
     
     let emailList = []
     if (typeof recipients === 'string') {
-      const parsed = JSON.parse(recipients)
-      emailList = Array.isArray(parsed) ? parsed : []
+      try {
+        const parsed = JSON.parse(recipients)
+        emailList = Array.isArray(parsed) ? parsed : []
+      } catch (jsonError) {
+        // 如果不是有效的 JSON，尝试按逗号分割
+        emailList = recipients.split(',').map(r => r.trim()).filter(r => r)
+      }
     } else if (Array.isArray(recipients)) {
       emailList = recipients
     }
@@ -861,7 +880,8 @@ const parseRecipients = (recipients) => {
     return displayList.join(', ')
   } catch (error) {
     console.error('解析收件人失败:', error, recipients)
-    return '-'
+    // 如果完全失败，至少返回原始值
+    return String(recipients)
   }
 }
 
@@ -900,6 +920,36 @@ onMounted(() => {
   font-size: 12px;
   color: var(--el-text-color-secondary);
   margin-top: 4px;
+}
+
+/* 对话框样式优化 - 固定标题和底部按钮 */
+.notification-dialog :deep(.el-dialog) {
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.notification-dialog :deep(.el-dialog__header) {
+  flex-shrink: 0;
+  padding: 20px 20px 10px;
+}
+
+.notification-dialog :deep(.el-dialog__body) {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 20px;
+  max-height: calc(90vh - 140px);
+}
+
+.notification-dialog :deep(.el-dialog__footer) {
+  flex-shrink: 0;
+  padding: 10px 20px 20px;
+  border-top: 1px solid var(--el-border-color-light);
+}
+
+/* 深色模式适配 */
+html.dark .notification-dialog :deep(.el-dialog__footer) {
+  border-top-color: var(--el-border-color);
 }
 </style>
 
