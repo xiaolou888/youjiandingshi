@@ -4,6 +4,45 @@ const db = require('../config/database');
 const { hashPassword, comparePassword, generateToken, authMiddleware } = require('../utils/auth');
 
 /**
+ * 用户注册（安装时使用，不需要认证）
+ */
+router.post('/register', async (req, res) => {
+  try {
+    const { username, password, nickname, email } = req.body;
+
+    // 验证必填字段
+    if (!username || !password) {
+      return res.status(400).json({ success: false, message: '请输入用户名和密码' });
+    }
+
+    // 验证密码长度
+    if (password.length < 6) {
+      return res.status(400).json({ success: false, message: '密码长度不能少于6位' });
+    }
+
+    // 检查用户名是否存在
+    const [existingUsers] = await db.query('SELECT id FROM users WHERE username = ?', [username]);
+    if (existingUsers.length > 0) {
+      return res.status(400).json({ success: false, message: '用户名已存在' });
+    }
+
+    // 加密密码
+    const hashedPassword = await hashPassword(password);
+
+    // 创建用户
+    await db.query(
+      'INSERT INTO users (username, password, nickname, email) VALUES (?, ?, ?, ?)',
+      [username, hashedPassword, nickname || '', email || '']
+    );
+
+    res.json({ success: true, message: '用户注册成功' });
+  } catch (error) {
+    console.error('注册失败:', error);
+    res.status(500).json({ success: false, message: '注册失败' });
+  }
+});
+
+/**
  * 用户登录
  */
 router.post('/login', async (req, res) => {

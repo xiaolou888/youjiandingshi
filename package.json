@@ -1,1 +1,6 @@
-
+{
+  "name": "youjiandingshi",
+  "version": "1.0.0",
+  "description": "消息通知系统",
+  "private": true
+}

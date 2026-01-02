@@ -77,7 +77,11 @@
       <el-table :data="list" style="margin-top: 20px;" v-loading="loading">
         <el-table-column prop="id" label="ID" width="60" />
         <el-table-column prop="title" label="通知标题" min-width="200" />
-        <el-table-column prop="recipients" label="收件人" min-width="200" />
+        <el-table-column prop="recipients" label="收件人" min-width="200" show-overflow-tooltip>
+          <template #default="{ row }">
+            {{ parseRecipients(row.recipients) }}
+          </template>
+        </el-table-column>
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === 'success' ? 'success' : 'danger'" size="small">
@@ -119,12 +123,14 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Delete } from '@element-plus/icons-vue'
 import { getLogList, getLogStats, clearLogs } from '@/api/log'
+import { getContactList } from '@/api/contact'
 
 const loading = ref(false)
 const filterStatus = ref('')
 
 const list = ref([])
 const stats = ref({})
+const contacts = ref([])
 
 const pagination = reactive({
   page: 1,
@@ -170,6 +176,16 @@ const loadList = async () => {
   }
 }
 
+// 加载联系人列表
+const loadContacts = async () => {
+  try {
+    const res = await getContactList({ limit: 1000 })
+    contacts.value = res.data
+  } catch (error) {
+    console.error('加载联系人失败:', error)
+  }
+}
+
 const handleClear = async (days) => {
   try {
     await clearLogs(days)
@@ -181,9 +197,40 @@ const handleClear = async (days) => {
   }
 }
 
+// 解析收件人列表（优先显示名称）
+const parseRecipients = (recipients) => {
+  try {
+    if (!recipients) return '-'
+    
+    let emailList = []
+    if (typeof recipients === 'string') {
+      const parsed = JSON.parse(recipients)
+      emailList = Array.isArray(parsed) ? parsed : [recipients]
+    } else if (Array.isArray(recipients)) {
+      emailList = recipients
+    } else {
+      return recipients
+    }
+    
+    if (emailList.length === 0) return '-'
+    
+    // 将邮箱转换为名称（如果有联系人）
+    const displayList = emailList.map(email => {
+      const contact = contacts.value.find(c => c.email === email)
+      return contact && contact.name ? contact.name : email
+    })
+    
+    return displayList.join(', ')
+  } catch (error) {
+    // 如果解析失败，直接返回原始字符串
+    return recipients || '-'
+  }
+}
+
 onMounted(() => {
   loadStats()
   loadList()
+  loadContacts()
 })
 </script>
 

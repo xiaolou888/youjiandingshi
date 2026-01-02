@@ -101,7 +101,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
-import { Bell, Sunny, Moon, Fold, Expand, User, UserFilled, ArrowDown, SwitchButton } from '@element-plus/icons-vue'
+import { 
+  Bell, Sunny, Moon, Fold, Expand, User, UserFilled, ArrowDown, SwitchButton,
+  DataLine, Message, DocumentCopy, Monitor
+} from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -113,13 +116,22 @@ const isDark = computed(() => themeStore.isDark)
 const userInfo = computed(() => userStore.userInfo)
 
 const routes = computed(() => {
-  return router.options.routes[1].children.filter(r => !r.meta?.hideInMenu)
+  // 找到布局路由（path 为 '/'）
+  const layoutRoute = router.options.routes.find(r => r.path === '/')
+  if (!layoutRoute || !layoutRoute.children) {
+    console.error('未找到布局路由或子路由')
+    return []
+  }
+  return layoutRoute.children.filter(r => !r.meta?.hideInMenu)
 })
 
 const currentRoute = computed(() => route.path)
 
 const currentTitle = computed(() => {
-  const currentRoute = router.options.routes[1].children.find(r => r.path === route.path.replace('/', ''))
+  const layoutRoute = router.options.routes.find(r => r.path === '/')
+  if (!layoutRoute || !layoutRoute.children) return ''
+  
+  const currentRoute = layoutRoute.children.find(r => r.path === route.path.replace('/', ''))
   return currentRoute?.meta?.title || ''
 })
 

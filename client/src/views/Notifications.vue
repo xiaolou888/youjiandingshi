@@ -33,9 +33,9 @@
       </div>
 
       <!-- 列表 -->
-      <el-table :data="list" style="margin-top: 20px;" v-loading="loading">
-        <el-table-column prop="id" label="ID" width="60" />
-        <el-table-column prop="title" label="通知标题" min-width="200">
+      <el-table :data="list" style="margin-top: 20px; width: 100%;" v-loading="loading">
+        <el-table-column prop="id" label="ID" width="70" />
+        <el-table-column prop="title" label="通知标题" min-width="180">
           <template #default="{ row }">
             {{ row.title }}
             <el-tag v-if="row.enable_repeat" type="warning" size="small" style="margin-left: 8px;">
@@ -43,7 +43,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="type" label="类型" width="140">
+        <el-table-column prop="type" label="类型" width="130">
           <template #default="{ row }">
             <el-tag :type="getTypeTag(row.type).type" size="small">
               {{ getTypeTag(row.type).label }}
@@ -51,38 +51,40 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="recipients" label="收件人" min-width="200">
+        <el-table-column prop="recipients" label="收件人" min-width="180" show-overflow-tooltip>
           <template #default="{ row }">
-            {{ JSON.parse(row.recipients).join(', ') }}
+            {{ parseRecipients(row.recipients) }}
           </template>
         </el-table-column>
-        <el-table-column prop="next_send_at" label="下次发送" width="180">
-          <template #default="{ row }">
-            {{ row.next_send_at ? formatDate(row.next_send_at) : '-' }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="status" label="状态" width="90">
           <template #default="{ row }">
             <el-tag :type="getStatusTag(row.status).type" size="small">
               {{ getStatusTag(row.status).label }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="240" fixed="right">
+        <el-table-column prop="next_send_at" label="下次发送" width="170">
           <template #default="{ row }">
-            <el-button 
-              :type="row.status === 'active' ? 'warning' : 'success'" 
-              size="small" 
-              @click="toggleStatus(row)"
-            >
-              {{ row.status === 'active' ? '暂停' : '恢复' }}
-            </el-button>
-            <el-button size="small" @click="showDialog('edit', row)">编辑</el-button>
-            <el-popconfirm title="确定删除这条通知吗？" @confirm="handleDelete(row.id)">
-              <template #reference>
-                <el-button type="danger" size="small">删除</el-button>
-              </template>
-            </el-popconfirm>
+            {{ row.next_send_at ? formatDate(row.next_send_at) : '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="200" fixed="right">
+          <template #default="{ row }">
+            <div style="display: flex; gap: 8px; white-space: nowrap;">
+              <el-button 
+                :type="row.status === 'active' ? 'warning' : 'success'" 
+                size="small" 
+                @click="toggleStatus(row)"
+              >
+                {{ row.status === 'active' ? '暂停' : '恢复' }}
+              </el-button>
+              <el-button size="small" @click="showDialog('edit', row)">编辑</el-button>
+              <el-popconfirm title="确定删除这条通知吗？" @confirm="handleDelete(row.id)">
+                <template #reference>
+                  <el-button type="danger" size="small">删除</el-button>
+                </template>
+              </el-popconfirm>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -106,6 +108,7 @@
       v-model="dialogVisible"
       :title="dialogType === 'create' ? '新建通知' : '编辑通知'"
       width="800px"
+      :close-on-click-modal="false"
       @closed="resetForm"
     >
       <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
@@ -479,6 +482,17 @@ const formatDate = (dateStr) => {
   return new Date(dateStr).toLocaleString('zh-CN')
 }
 
+// 格式化本地时间为 YYYY-MM-DD HH:mm:ss（不转换时区）
+const formatLocalDateTime = (date) => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hour = String(date.getHours()).padStart(2, '0')
+  const minute = String(date.getMinutes()).padStart(2, '0')
+  const second = String(date.getSeconds()).padStart(2, '0')
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`
+}
+
 const loadList = async () => {
   loading.value = true
   try {
@@ -550,35 +564,50 @@ const showDialog = (type, row = null) => {
     form.id = row.id
     form.title = row.title
     form.type = row.type
-    form.recipients = JSON.parse(row.recipients)
+    // 安全解析 recipients
+    try {
+      form.recipients = typeof row.recipients === 'string' ? JSON.parse(row.recipients) : row.recipients
+    } catch (error) {
+      console.error('解析收件人失败:', error)
+      form.recipients = []
+    }
     form.content = row.content
     form.custom_period_days = row.custom_period_days || 1
     form.enable_repeat = row.enable_repeat === 1
     form.repeat_times = row.repeat_times || 1
     form.repeat_interval = row.repeat_interval || 30
     
-    // 解析时间
+    // 解析时间 - 所有类型都从 schedule_time 解析
     if (row.schedule_time) {
       const date = new Date(row.schedule_time)
       
-      if (row.type === 'daily') {
+      if (row.type === 'once') {
+        // 单次：完整日期时间
+        form.schedule_time = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`
+      } else if (row.type === 'daily') {
+        // 每天：只需要时间
         form.schedule_time = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
       } else if (row.type === 'weekly') {
+        // 每周：从 schedule_time 解析星期几和时间
         form.weekly_day = date.getDay()
         form.weekly_time = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
       } else if (row.type === 'monthly') {
+        // 每月：从 schedule_time 解析日期和时间
         form.monthly_day = date.getDate()
         form.monthly_time = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
       } else if (row.type === 'quarterly') {
+        // 每季度：使用数据库存储的字段 + 从 schedule_time 解析时间
         form.quarterly_month = row.quarterly_month || 1
         form.quarterly_day = row.quarterly_day || 1
         form.quarterly_time = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
       } else if (row.type === 'yearly') {
+        // 每年：从 schedule_time 解析月份、日期和时间
         form.yearly_month = date.getMonth() + 1
         form.yearly_day = date.getDate()
         form.yearly_time = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
-      } else {
-        form.schedule_time = row.schedule_time
+      } else if (row.type === 'custom') {
+        // 自定义周期：完整日期时间
+        form.schedule_time = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`
       }
     }
   }
@@ -611,12 +640,62 @@ const resetForm = () => {
 
 const handleSubmit = async () => {
   try {
-    await formRef.value.validate()
+    // 先验证其他必填字段（不包括 schedule_time）
+    // 因为 schedule_time 需要根据类型动态构建
+    if (!form.title) {
+      ElMessage.warning('请输入通知标题')
+      return
+    }
+    if (!form.type) {
+      ElMessage.warning('请选择通知类型')
+      return
+    }
+    if (!form.recipients || form.recipients.length === 0) {
+      ElMessage.warning('请添加至少一个收件人')
+      return
+    }
+    if (!form.content) {
+      ElMessage.warning('请输入邮件内容')
+      return
+    }
     
     // 自定义周期类型需要验证周期天数
     if (form.type === 'custom') {
       if (!form.custom_period_days || form.custom_period_days < 1) {
         ElMessage.warning('请输入有效的周期天数（至少1天）')
+        return
+      }
+    }
+    
+    // 验证时间字段
+    if (form.type === 'once' || form.type === 'custom') {
+      if (!form.schedule_time) {
+        ElMessage.warning('请选择发送时间')
+        return
+      }
+    } else if (form.type === 'daily') {
+      if (!form.schedule_time) {
+        ElMessage.warning('请选择发送时间')
+        return
+      }
+    } else if (form.type === 'weekly') {
+      if (form.weekly_day === null || form.weekly_day === undefined || !form.weekly_time) {
+        ElMessage.warning('请选择星期和时间')
+        return
+      }
+    } else if (form.type === 'monthly') {
+      if (!form.monthly_day || !form.monthly_time) {
+        ElMessage.warning('请选择日期和时间')
+        return
+      }
+    } else if (form.type === 'quarterly') {
+      if (!form.quarterly_month || !form.quarterly_day || !form.quarterly_time) {
+        ElMessage.warning('请选择月份、日期和时间')
+        return
+      }
+    } else if (form.type === 'yearly') {
+      if (!form.yearly_month || !form.yearly_day || !form.yearly_time) {
+        ElMessage.warning('请选择月份、日期和时间')
         return
       }
     }
@@ -629,7 +708,7 @@ const handleSubmit = async () => {
       // 每天：只用时间，日期用今天
       const [hour, minute] = form.schedule_time.split(':')
       const date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, 0)
-      scheduleTime = date.toISOString().slice(0, 19).replace('T', ' ')
+      scheduleTime = formatLocalDateTime(date)
     } else if (form.type === 'weekly') {
       // 每周：找到下一个对应星期几
       const [hour, minute] = form.weekly_time.split(':')
@@ -642,7 +721,7 @@ const handleSubmit = async () => {
       const targetDate = new Date(now)
       targetDate.setDate(now.getDate() + daysUntilTarget)
       targetDate.setHours(hour, minute, 0, 0)
-      scheduleTime = targetDate.toISOString().slice(0, 19).replace('T', ' ')
+      scheduleTime = formatLocalDateTime(targetDate)
     } else if (form.type === 'monthly') {
       // 每月：指定日期 + 时间
       const [hour, minute] = form.monthly_time.split(':')
@@ -658,7 +737,7 @@ const handleSubmit = async () => {
         }
       }
       const date = new Date(year, month, form.monthly_day, hour, minute, 0)
-      scheduleTime = date.toISOString().slice(0, 19).replace('T', ' ')
+      scheduleTime = formatLocalDateTime(date)
     } else if (form.type === 'quarterly') {
       // 每季度：指定季度内的月日 + 时间
       const [hour, minute] = form.quarterly_time.split(':')
@@ -682,7 +761,7 @@ const handleSubmit = async () => {
         targetDate = new Date(year, targetMonth, form.quarterly_day, hour, minute, 0)
       }
       
-      scheduleTime = targetDate.toISOString().slice(0, 19).replace('T', ' ')
+      scheduleTime = formatLocalDateTime(targetDate)
     } else if (form.type === 'yearly') {
       // 每年：指定月日 + 时间
       const [hour, minute] = form.yearly_time.split(':')
@@ -693,7 +772,7 @@ const handleSubmit = async () => {
         year++
         targetDate.setFullYear(year)
       }
-      scheduleTime = targetDate.toISOString().slice(0, 19).replace('T', ' ')
+      scheduleTime = formatLocalDateTime(targetDate)
     }
     
     submitLoading.value = true
@@ -708,14 +787,11 @@ const handleSubmit = async () => {
       repeat_times: form.repeat_times,
       repeat_interval: form.repeat_interval
     }
-
-    // 如果是自定义周期，添加周期天数
+    
+    // 添加类型特定的字段
     if (form.type === 'custom') {
       data.custom_period_days = form.custom_period_days
-    }
-    
-    // 如果是每季度，添加季度字段
-    if (form.type === 'quarterly') {
+    } else if (form.type === 'quarterly') {
       data.quarterly_month = form.quarterly_month
       data.quarterly_day = form.quarterly_day
     }
@@ -758,6 +834,34 @@ const handleDelete = async (id) => {
     loadList()
   } catch (error) {
     ElMessage.error('删除失败')
+  }
+}
+
+// 解析收件人列表（优先显示名称）
+const parseRecipients = (recipients) => {
+  try {
+    if (!recipients) return '-'
+    
+    let emailList = []
+    if (typeof recipients === 'string') {
+      const parsed = JSON.parse(recipients)
+      emailList = Array.isArray(parsed) ? parsed : []
+    } else if (Array.isArray(recipients)) {
+      emailList = recipients
+    }
+    
+    if (emailList.length === 0) return '-'
+    
+    // 将邮箱转换为名称（如果有联系人）
+    const displayList = emailList.map(email => {
+      const contact = contacts.value.find(c => c.email === email)
+      return contact && contact.name ? contact.name : email
+    })
+    
+    return displayList.join(', ')
+  } catch (error) {
+    console.error('解析收件人失败:', error, recipients)
+    return '-'
   }
 }
 

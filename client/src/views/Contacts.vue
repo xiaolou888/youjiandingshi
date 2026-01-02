@@ -101,6 +101,7 @@
       v-model="dialogVisible"
       :title="dialogType === 'create' ? '添加联系人' : '编辑联系人'"
       width="600px"
+      :close-on-click-modal="false"
       @closed="resetForm"
     >
       <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
@@ -154,7 +155,7 @@
     </el-dialog>
 
     <!-- 分组管理对话框 -->
-    <el-dialog v-model="groupDialogVisible" title="分组管理" width="500px">
+    <el-dialog v-model="groupDialogVisible" title="分组管理" width="500px" :close-on-click-modal="false">
       <el-form :model="groupForm" inline style="margin-bottom: 20px;">
         <el-form-item>
           <el-input v-model="groupForm.name" placeholder="分组名称" />

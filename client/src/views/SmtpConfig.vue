@@ -88,6 +88,7 @@
       v-model="dialogVisible"
       :title="dialogType === 'create' ? '添加配置' : '编辑配置'"
       width="600px"
+      :close-on-click-modal="false"
       @closed="resetForm"
     >
       <el-form :model="form" :rules="rules" ref="formRef" label-width="120px">

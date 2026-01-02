@@ -1,13 +1,30 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path'
+import path from 'path'
 
 export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
+      '@': path.resolve(__dirname, 'src')
     }
+  },
+  build: {
+    // 禁用 CSS 代码分割
+    cssCodeSplit: false,
+    rollupOptions: {
+      output: {
+        // 简化代码分割策略
+        manualChunks: {
+          'vue': ['vue', 'vue-router'],
+          'element-plus': ['element-plus'],
+          'axios': ['axios']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 2000,
+    minify: 'esbuild',
+    sourcemap: false
   },
   server: {
     port: 5173,
@@ -17,21 +34,5 @@ export default defineConfig({
         changeOrigin: true
       }
     }
-  },
-  build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
-    sourcemap: false,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'element-plus': ['element-plus'],
-          'vue-vendor': ['vue', 'vue-router', 'pinia']
-        }
-      }
-    }
   }
 })
-
-
-
