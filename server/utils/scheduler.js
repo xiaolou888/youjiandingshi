@@ -101,12 +101,23 @@ function calculateNextQuarterlyTime(quarterlyMonth, quarterlyDay, time, lastSent
  */
 async function logSend(notificationId, title, recipients, status, errorMessage = null) {
   try {
+    // 检查表结构，兼容有 recipient 字段的情况
+    const recipientValue = Array.isArray(recipients) ? recipients[0] : recipients.split(',')[0].trim();
+    
     await db.query(
-      'INSERT INTO send_logs (notification_id, title, recipients, status, error_message) VALUES (?, ?, ?, ?, ?)',
-      [notificationId, title, recipients, status, errorMessage]
+      'INSERT INTO send_logs (notification_id, title, recipients, recipient, status, error_message) VALUES (?, ?, ?, ?, ?, ?)',
+      [notificationId, title, recipients, recipientValue, status, errorMessage]
     );
   } catch (error) {
-    console.error('记录日志失败:', error);
+    // 如果插入失败，尝试不带 recipient 字段的版本
+    try {
+      await db.query(
+        'INSERT INTO send_logs (notification_id, title, recipients, status, error_message) VALUES (?, ?, ?, ?, ?)',
+        [notificationId, title, recipients, status, errorMessage]
+      );
+    } catch (retryError) {
+      console.error('记录日志失败:', retryError);
+    }
   }
 }
 

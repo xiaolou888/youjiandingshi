@@ -117,6 +117,10 @@
       :close-on-click-modal="false"
       @closed="resetForm"
       class="notification-dialog"
+      destroy-on-close
+      append-to-body
+      :lock-scroll="true"
+      top="5vh"
     >
       <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
         <el-form-item label="通知标题" prop="title">
@@ -922,34 +926,83 @@ onMounted(() => {
   margin-top: 4px;
 }
 
-/* 对话框样式优化 - 固定标题和底部按钮 */
+/* 对话框样式优化 - 固定标题和底部按钮，最大化空间 */
 .notification-dialog :deep(.el-dialog) {
-  display: flex;
-  flex-direction: column;
-  max-height: 90vh;
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: 90vh !important;
+  height: auto !important;
+  margin-top: 5vh !important;
+  margin-bottom: 5vh !important;
+  overflow: hidden !important;
 }
 
 .notification-dialog :deep(.el-dialog__header) {
-  flex-shrink: 0;
-  padding: 20px 20px 10px;
+  flex-shrink: 0 !important;
+  padding: 16px 20px !important;
+  margin: 0 !important;
+  border-bottom: 1px solid var(--el-border-color-lighter) !important;
 }
 
 .notification-dialog :deep(.el-dialog__body) {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px 20px;
-  max-height: calc(90vh - 140px);
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 20px !important;
+  margin: 0 !important;
+  /* 关键：限制高度，让滚动条出现在这里 */
+  max-height: calc(90vh - 120px) !important;
 }
 
 .notification-dialog :deep(.el-dialog__footer) {
-  flex-shrink: 0;
-  padding: 10px 20px 20px;
-  border-top: 1px solid var(--el-border-color-light);
+  flex-shrink: 0 !important;
+  padding: 12px 20px !important;
+  margin: 0 !important;
+  border-top: 1px solid var(--el-border-color-light) !important;
+  background-color: var(--el-fill-color-blank) !important;
 }
 
 /* 深色模式适配 */
+html.dark .notification-dialog :deep(.el-dialog__header) {
+  border-bottom-color: var(--el-border-color) !important;
+}
+
 html.dark .notification-dialog :deep(.el-dialog__footer) {
-  border-top-color: var(--el-border-color);
+  border-top-color: var(--el-border-color) !important;
+}
+</style>
+
+<style>
+/* 全局样式 - 确保通知对话框样式生效，最大化空间 */
+.notification-dialog .el-dialog {
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: 90vh !important;
+  overflow: hidden !important;
+}
+
+.notification-dialog .el-dialog__header {
+  flex-shrink: 0 !important;
+  padding: 16px 20px !important;
+  border-bottom: 1px solid var(--el-border-color-lighter) !important;
+}
+
+.notification-dialog .el-dialog__body {
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  max-height: calc(90vh - 120px) !important;
+}
+
+.notification-dialog .el-dialog__footer {
+  flex-shrink: 0 !important;
+  padding: 12px 20px !important;
+  border-top: 1px solid var(--el-border-color-light) !important;
+}
+
+/* 锁定页面滚动 */
+body.el-popup-parent--hidden {
+  overflow: hidden !important;
 }
 </style>
 
