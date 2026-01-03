@@ -27,7 +27,7 @@
           :index="route.path"
         >
           <el-icon>
-            <component :is="route.meta.icon" />
+            <component :is="iconMap[route.meta.icon]" />
           </el-icon>
           <template #title>{{ route.meta.title }}</template>
         </el-menu-item>
@@ -111,6 +111,16 @@ const router = useRouter()
 const themeStore = useThemeStore()
 const userStore = useUserStore()
 
+// 图标映射
+const iconMap = {
+  Bell,
+  DataLine,
+  Message,
+  DocumentCopy,
+  User,
+  Monitor
+}
+
 const isCollapse = ref(false)
 const isDark = computed(() => themeStore.isDark)
 const userInfo = computed(() => userStore.userInfo)
@@ -122,7 +132,13 @@ const routes = computed(() => {
     console.error('未找到布局路由或子路由')
     return []
   }
-  return layoutRoute.children.filter(r => !r.meta?.hideInMenu)
+  // 返回子路由，并确保 path 是完整路径
+  return layoutRoute.children
+    .filter(r => !r.meta?.hideInMenu)
+    .map(r => ({
+      ...r,
+      path: r.path.startsWith('/') ? r.path : `/${r.path}`
+    }))
 })
 
 const currentRoute = computed(() => route.path)

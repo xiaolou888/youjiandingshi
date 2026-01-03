@@ -95,13 +95,9 @@
         <el-table-column prop="id" label="ID" width="60" />
         <el-table-column prop="title" label="通知标题" min-width="180" />
         <el-table-column prop="recipients" label="收件人" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="status" label="状态" width="90">
           <template #default="{ row }">
-            <el-tag :type="row.status === 'success' ? 'success' : 'danger'" size="small">
-              <el-icon style="vertical-align: middle;">
-                <SuccessFilled v-if="row.status === 'success'" />
-                <CircleCloseFilled v-else />
-              </el-icon>
+            <el-tag :type="row.status === 'success' ? 'success' : 'danger'" size="small" class="status-tag">
               {{ row.status === 'success' ? '成功' : '失败' }}
             </el-tag>
           </template>
@@ -365,6 +361,11 @@ watch(autoRefresh, () => {
 .error-text {
   color: var(--el-color-danger);
   font-size: 12px;
+}
+
+/* 状态标签样式 - 防止换行 */
+.status-tag {
+  white-space: nowrap;
 }
 </style>
 
